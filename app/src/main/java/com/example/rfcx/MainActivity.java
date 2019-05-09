@@ -4,6 +4,7 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.TextView;
 
@@ -61,10 +62,15 @@ public class MainActivity extends AppCompatActivity {
             outputMap.put(0, outputScores);
             Object[] inputArray = {floatInputBuffer, sampleRateList};
 
+            long startTime = SystemClock.uptimeMillis();
             tflite.runForMultipleInputsOutputs(inputArray, outputMap);
+            long endTime = SystemClock.uptimeMillis();
 
             TextView textView = findViewById(R.id.textView);
             textView.setText(Float.toString(outputScores[0][0]));
+
+            TextView textViewTime = findViewById(R.id.textViewTime);
+            textViewTime.setText((endTime - startTime) + " ms");
         } catch (Exception e) {
             throw new RuntimeException("Problem executing model!", e);
         }
