@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         MappedByteBuffer model = null;
         List<String> labels = new ArrayList<String>();
         try {
-            model = loadModelFile("conv_actions_frozen.tflite");
+            model = loadModelFile("rfcx_model.tflite");
         } catch (IOException e) {
             throw new RuntimeException("Problem reading model file!", e);
         }
@@ -49,18 +49,20 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Problem reading label file!", e);
         }
         try (Interpreter tflite = new Interpreter(model, new Interpreter.Options())) {
-            float[][] floatInputBuffer = new float[16000][1];
-            int[] sampleRateList = new int[]{16000};
+            float[][][][] floatInputBuffer = new float[1][1][250][60];
+            //int[] sampleRateList = new int[]{16000};
 
             Random random = new Random();
-            for (int i = 0; i < 16000; ++i) {
-                floatInputBuffer[i][0] = (random.nextInt(Short.MAX_VALUE)) / 32767.0f;
+            for (int i = 0; i < 250; ++i) {
+                for (int j = 0; j < 60; j++) {
+                    floatInputBuffer[0][0][i][j] = (random.nextInt(Short.MAX_VALUE)) / 32767.0f;
+                }
             }
 
-            float[][] outputScores = new float[1][labels.size()];
+            float[][] outputScores = new float[1][2];
             Map<Integer, Object> outputMap = new HashMap<>();
             outputMap.put(0, outputScores);
-            Object[] inputArray = {floatInputBuffer, sampleRateList};
+            Object[] inputArray = {floatInputBuffer};
 
             long startTime = SystemClock.uptimeMillis();
             tflite.runForMultipleInputsOutputs(inputArray, outputMap);
